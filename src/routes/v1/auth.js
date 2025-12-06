@@ -8,6 +8,12 @@ const router = express.Router();
 // Sync Firebase user into Supabase
 router.post("/sync", verifyFirebaseToken, authController.syncUser);
 
+// Register new user
+router.post("/register", verifyFirebaseToken, authController.register);
+
+// Admin login
+router.post("/login", authController.login);
+
 // Get current logged-in user (from Supabase)
 router.get("/me", verifyFirebaseToken, authController.getMe);
 

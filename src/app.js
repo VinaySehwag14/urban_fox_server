@@ -29,6 +29,7 @@ app.use(requestLogger);
 
 // Routes
 app.use('/api/v1', routes);
+app.use('/api', routes); // Support non-versioned paths as requested
 
 // Health Check
 app.get('/health', (req, res) => {

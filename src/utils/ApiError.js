@@ -3,7 +3,7 @@
  * Extends Error to include status code
  */
 class ApiError extends Error {
-    constructor(message, statusCode) {
+    constructor(statusCode, message = "Something went wrong") {
         super(message);
         this.statusCode = statusCode;
         this.name = 'ApiError';
