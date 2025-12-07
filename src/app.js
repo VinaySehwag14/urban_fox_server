@@ -31,6 +31,21 @@ app.use(requestLogger);
 app.use('/api/v1', routes);
 app.use('/api', routes); // Support non-versioned paths as requested
 
+// Root Route
+app.get('/', (req, res) => {
+    res.status(200).json({
+        success: true,
+        message: 'Hello! Welcome to Urban Fox API 🦊',
+        version: '1.0.0',
+        endpoints: {
+            health: '/health',
+            documentation: '/api-docs',
+            api: '/api/v1'
+        },
+        timestamp: new Date().toISOString()
+    });
+});
+
 // Health Check
 app.get('/health', (req, res) => {
     res.status(200).json({

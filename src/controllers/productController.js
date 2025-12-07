@@ -47,6 +47,7 @@ exports.getProductBySlug = asyncHandler(async (req, res, next) => {
     });
 });
 
+<<<<<<< HEAD
 // POST /api/v1/products/add
 exports.addProduct = asyncHandler(async (req, res, next) => {
     // We expect the body to match the DB schema roughly or be mapped here
@@ -79,10 +80,24 @@ exports.addProduct = asyncHandler(async (req, res, next) => {
     return res.status(201).json({
         success: true,
         message: "Product added successfully",
+=======
+/**
+ * @desc    Create new product
+ * @route   POST /api/v1/products
+ * @access  Admin
+ */
+exports.createProduct = asyncHandler(async (req, res) => {
+    const product = await productService.createProduct(req.body);
+
+    res.status(201).json({
+        success: true,
+        message: 'Product created successfully',
+>>>>>>> 672ad7a08fa3fe83984c0481ac497906c2e4b238
         product
     });
 });
 
+<<<<<<< HEAD
 // PATCH /api/v1/products/edit/:id
 exports.editProduct = asyncHandler(async (req, res, next) => {
     const { id } = req.params;
@@ -125,10 +140,24 @@ exports.editProduct = asyncHandler(async (req, res, next) => {
     return res.status(200).json({
         success: true,
         message: "Product updated successfully",
+=======
+/**
+ * @desc    Update product
+ * @route   PATCH /api/v1/products/:id
+ * @access  Admin
+ */
+exports.updateProduct = asyncHandler(async (req, res) => {
+    const product = await productService.updateProduct(req.params.id, req.body);
+
+    res.status(200).json({
+        success: true,
+        message: 'Product updated successfully',
+>>>>>>> 672ad7a08fa3fe83984c0481ac497906c2e4b238
         product
     });
 });
 
+<<<<<<< HEAD
 // DELETE /api/v1/products/delete/:id
 exports.deleteProduct = asyncHandler(async (req, res, next) => {
     const { id } = req.params;
@@ -153,5 +182,33 @@ exports.deleteProduct = asyncHandler(async (req, res, next) => {
     return res.status(200).json({
         success: true,
         message: "Product deleted successfully"
+=======
+/**
+ * @desc    Delete product (soft delete)
+ * @route   DELETE /api/v1/products/:id
+ * @access  Admin
+ */
+exports.deleteProduct = asyncHandler(async (req, res) => {
+    const result = await productService.deleteProduct(req.params.id);
+
+    res.status(200).json({
+        success: true,
+        ...result
+    });
+});
+
+/**
+ * @desc    Get product variants
+ * @route   GET /api/v1/products/:id/variants
+ * @access  Public
+ */
+exports.getProductVariants = asyncHandler(async (req, res) => {
+    const variants = await productService.getProductVariants(req.params.id);
+
+    res.status(200).json({
+        success: true,
+        count: variants.length,
+        variants
+>>>>>>> 672ad7a08fa3fe83984c0481ac497906c2e4b238
     });
 });
