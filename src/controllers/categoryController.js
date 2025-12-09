@@ -1,12 +1,16 @@
 const supabase = require("../config/supabase");
 const asyncHandler = require("../utils/asyncHandler");
 const ApiError = require("../utils/ApiError");
+const { generateSlug } = require("../utils/slugify");
 
 // GET /api/v1/categories
 exports.getAllCategories = asyncHandler(async (req, res, next) => {
     const { data: categories, error } = await supabase
         .from("categories")
-        .select("*")
+        .select(`
+            *,
+            parent:categories(id, name)
+        `)
         .order("created_at", { ascending: false });
 
     if (error) {
@@ -22,21 +26,36 @@ exports.getAllCategories = asyncHandler(async (req, res, next) => {
 
 // POST /api/v1/categories/create
 exports.createCategory = asyncHandler(async (req, res, next) => {
-    const { name, image } = req.body;
+    const { name, description, image_url, parent_id, is_active } = req.body;
 
     if (!name) {
         throw new ApiError(400, "Category name is required");
     }
 
+    const slug = generateSlug(name);
+
+    if (parent_id) {
+        // Verify parent exists
+        const { data: parent } = await supabase.from("categories").select("id").eq("id", parent_id).single();
+        if (!parent) throw new ApiError(400, "Parent category not found");
+    }
+
     const { data: category, error } = await supabase
         .from("categories")
-        .insert({ name, image })
+        .insert({
+            name,
+            slug,
+            description,
+            image_url,
+            parent_id,
+            is_active: is_active ?? true
+        })
         .select()
         .single();
 
     if (error) {
         if (error.code === "23505") { // Unique violation
-            throw new ApiError(409, "Category with this name already exists");
+            throw new ApiError(409, "Category with this name/slug already exists");
         }
         throw new ApiError(500, `Failed to create category: ${error.message}`);
     }
@@ -51,15 +70,21 @@ exports.createCategory = asyncHandler(async (req, res, next) => {
 // PATCH /api/v1/categories/edit/:id
 exports.updateCategory = asyncHandler(async (req, res, next) => {
     const { id } = req.params;
-    const { name, image } = req.body;
+    const { name, description, image_url, parent_id, is_active } = req.body;
 
     if (!id) {
         throw new ApiError(400, "Category ID is required");
     }
 
     const updates = {};
-    if (name) updates.name = name;
-    if (image !== undefined) updates.image = image;
+    if (name) {
+        updates.name = name;
+        updates.slug = generateSlug(name);
+    }
+    if (description !== undefined) updates.description = description;
+    if (image_url !== undefined) updates.image_url = image_url;
+    if (parent_id !== undefined) updates.parent_id = parent_id;
+    if (is_active !== undefined) updates.is_active = is_active;
 
     if (Object.keys(updates).length === 0) {
         throw new ApiError(400, "No fields to update");
@@ -74,7 +99,7 @@ exports.updateCategory = asyncHandler(async (req, res, next) => {
 
     if (error) {
         if (error.code === "23505") {
-            throw new ApiError(409, "Category with this name already exists");
+            throw new ApiError(409, "Category with this name/slug already exists");
         }
         throw new ApiError(500, `Failed to update category: ${error.message}`);
     }

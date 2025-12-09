@@ -32,7 +32,6 @@ class CartService {
                         slug,
                         selling_price,
                         mrp,
-                        discount_percent,
                         is_active,
                         product_images(image_url, is_primary)
                     )

@@ -1,20 +1,20 @@
 // src/routes/v1/auth.js
 const express = require("express");
 const authController = require("../../controllers/authController");
-const verifyFirebaseToken = require("../../middleware/auth");
+const { protect } = require("../../middleware/auth");
 
 const router = express.Router();
 
 // Sync Firebase user into Supabase
-router.post("/sync", verifyFirebaseToken, authController.syncUser);
+router.post("/sync", protect, authController.syncUser);
 
 // Register new user
-router.post("/register", verifyFirebaseToken, authController.register);
+router.post("/register", protect, authController.register);
 
 // Admin login
 router.post("/login", authController.login);
 
 // Get current logged-in user (from Supabase)
-router.get("/me", verifyFirebaseToken, authController.getMe);
+router.get("/me", protect, authController.getMe);
 
 module.exports = router;
