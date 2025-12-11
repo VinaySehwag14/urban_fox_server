@@ -24,6 +24,33 @@ const protect = async (req, res, next) => {
     }
 };
 
+const optionalProtect = async (req, res, next) => {
+    const authHeader = req.headers.authorization || "";
+    const token = authHeader.startsWith("Bearer ")
+        ? authHeader.slice(7)
+        : null;
+
+    if (!token) {
+        req.user = null;
+        return next();
+    }
+
+    try {
+        const decoded = await admin.auth().verifyIdToken(token);
+        req.user = decoded;
+        return next();
+    } catch (err) {
+        // If token is invalid but present, we can either:
+        // 1. Fail (strict) - "Your token is bad"
+        // 2. Ignore (loose) - "Treat as no token"
+
+        // Given this is for mixed auth, if they SENT a token, it usually means they INTENDED to use it.
+        // Failing here helps debug bad tokens.
+        logger.error("Optional Firebase token verification failed", err);
+        return next(new ApiError(401, "Invalid or expired token"));
+    }
+};
+
 const authorize = (...roles) => {
     return (req, res, next) => {
         // Since we use Firebase Auth, roles are custom claims or derived.
@@ -65,5 +92,6 @@ const authorize = (...roles) => {
 
 module.exports = {
     protect,
+    optionalProtect,
     authorize
 };

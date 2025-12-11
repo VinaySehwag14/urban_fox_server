@@ -70,22 +70,46 @@ exports.getMe = asyncHandler(async (req, res, next) => {
     return res.status(200).json({ user });
 });
 
+const admin = require("../config/firebase");
+
 // POST /api/v1/auth/register
 exports.register = asyncHandler(async (req, res, next) => {
-    const {
-        uid,          // Firebase UID
+    let {
+        uid,
         email,
         name,
         picture,
         phone_number,
     } = req.user || {};
 
-    if (!uid || !email) {
-        throw new ApiError(400, "Missing uid or email in Firebase token");
+    const { displayName, photoURL, password } = req.body || {};
+
+    // If no token provided (req.user undefined), try to create user in Firebase
+    if (!uid) {
+        if (!req.body.email || !password) {
+            throw new ApiError(400, "Email and password are required");
+        }
+
+        email = req.body.email;
+
+        try {
+            const userRecord = await admin.auth().createUser({
+                email,
+                password,
+                displayName: displayName || name,
+                photoURL: photoURL || picture,
+                phoneNumber: phone_number,
+            });
+            uid = userRecord.uid;
+            // email is already set
+        } catch (firebaseError) {
+            throw new ApiError(400, `Firebase creation failed: ${firebaseError.message}`);
+        }
     }
 
-    // Optional overrides from frontend body
-    const { displayName, photoURL } = req.body || {};
+    if (!uid || !email) {
+        throw new ApiError(400, "Missing uid or email");
+    }
 
     const now = new Date().toISOString();
 

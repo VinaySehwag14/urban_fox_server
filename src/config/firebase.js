@@ -8,7 +8,16 @@ try {
     if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
         // If the environment variable is present (e.g. in Vercel), use it.
         // The value should be the stringified JSON content of the service account file.
-        serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+        let key = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+        if (typeof key === 'string') {
+            key = key.trim();
+            if (key.startsWith("'") && key.endsWith("'")) {
+                key = key.slice(1, -1);
+            } else if (key.startsWith('"') && key.endsWith('"')) {
+                key = key.slice(1, -1);
+            }
+        }
+        serviceAccount = JSON.parse(key);
     } else {
         // Fallback to local file for development
         const serviceAccountPath = path.join(__dirname, "..", "..", "serviceAccountKey.json");

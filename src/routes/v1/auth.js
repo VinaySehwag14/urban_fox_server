@@ -1,7 +1,7 @@
 // src/routes/v1/auth.js
 const express = require("express");
 const authController = require("../../controllers/authController");
-const { protect } = require("../../middleware/auth");
+const { protect, optionalProtect } = require("../../middleware/auth");
 
 const router = express.Router();
 
@@ -9,7 +9,7 @@ const router = express.Router();
 router.post("/sync", protect, authController.syncUser);
 
 // Register new user
-router.post("/register", protect, authController.register);
+router.post("/register", optionalProtect, authController.register);
 
 // Admin login
 router.post("/login", authController.login);
