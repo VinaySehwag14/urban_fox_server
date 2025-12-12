@@ -217,3 +217,43 @@ exports.updateOrderStatus = asyncHandler(async (req, res, next) => {
         order
     });
 });
+// GET /api/v1/orders/admin/:id (Admin only)
+exports.getAdminOrderById = asyncHandler(async (req, res, next) => {
+    const { id } = req.params;
+
+    const { data: order, error } = await supabase
+        .from("orders")
+        .select(`
+            *,
+            items:order_items(*),
+            user:users(id, name, email, phone_number)
+        `)
+        .eq("id", id)
+        .single();
+
+    if (error || !order) throw new ApiError(404, "Order not found");
+
+    return res.status(200).json({
+        success: true,
+        order
+    });
+});
+
+// GET /api/v1/orders/admin (Admin only - List all orders)
+exports.getAllAdminOrders = asyncHandler(async (req, res, next) => {
+    const { data: orders, error } = await supabase
+        .from("orders")
+        .select(`
+            *,
+            items:order_items(*),
+            user:users(id, name, email, phone_number)
+        `)
+        .order("created_at", { ascending: false });
+
+    if (error) throw new ApiError(500, `Failed to fetch orders: ${error.message}`);
+
+    return res.status(200).json({
+        success: true,
+        orders
+    });
+});

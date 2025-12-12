@@ -17,6 +17,8 @@ const reviewRoute = require("./reviewRoute");
 const paymentRoute = require("./paymentRoute");
 const wishlistRoute = require("./wishlistRoute");
 const tagRoute = require("./tagRoute");
+const inventoryRoute = require("./inventoryRoute");
+
 
 router.use('/health', healthRoute);
 router.use('/items', itemRoute);
@@ -41,5 +43,6 @@ router.use("/reviews", reviewRoute);
 router.use("/payments", paymentRoute);
 router.use("/wishlist", wishlistRoute);
 router.use("/tags", tagRoute);
+router.use("/inventory", inventoryRoute);
 
 module.exports = router;
