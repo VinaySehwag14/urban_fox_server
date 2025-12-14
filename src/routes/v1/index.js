@@ -45,4 +45,7 @@ router.use("/wishlist", wishlistRoute);
 router.use("/tags", tagRoute);
 router.use("/inventory", inventoryRoute);
 
+const qikinkRoutes = require('../qikinkRoutes');
+router.use('/qikink', qikinkRoutes);
+
 module.exports = router;
