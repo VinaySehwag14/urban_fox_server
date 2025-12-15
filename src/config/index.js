@@ -7,7 +7,22 @@ const config = {
 
     // CORS configuration
     cors: {
-        origin: process.env.CORS_ORIGIN || '*',
+        origin: (origin, callback) => {
+            const allowedOrigins = process.env.CORS_ORIGIN
+                ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
+                : ['*'];
+
+            // Allow requests with no origin (like mobile apps or curl requests)
+            if (!origin || allowedOrigins.includes('*')) {
+                return callback(null, true);
+            }
+
+            if (allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
         credentials: true,
     },
 
