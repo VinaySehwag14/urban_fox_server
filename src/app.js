@@ -52,7 +52,7 @@ app.use(
 /**
  * ✅ REQUIRED FOR PREFLIGHT REQUESTS
  */
-app.options('*', cors());
+app.options(/(.*)/, cors());
 
 app.use(rateLimiter);
 
