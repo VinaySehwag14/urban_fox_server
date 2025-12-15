@@ -13,25 +13,79 @@ const swaggerSpecs = require('./config/swagger');
 
 const app = express();
 
-// Security Middleware
+/**
+ * ===============================
+ * SECURITY & CORE MIDDLEWARE
+ * ===============================
+ */
 app.use(helmet());
-app.use(cors(config.cors));
+
+/**
+ * ===============================
+ * CORS (FINAL FIX)
+ * ===============================
+ */
+app.use(
+    cors({
+        origin: (origin, callback) => {
+            const allowedOrigins = process.env.CORS_ORIGIN
+                ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
+                : [];
+
+            // Allow non-browser requests (Postman, curl, server-side)
+            if (!origin) {
+                return callback(null, true);
+            }
+
+            if (allowedOrigins.includes(origin)) {
+                return callback(null, true);
+            }
+
+            return callback(new Error(`CORS blocked for origin: ${origin}`));
+        },
+        credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+    })
+);
+
+/**
+ * ✅ REQUIRED FOR PREFLIGHT REQUESTS
+ */
+app.options('*', cors());
+
 app.use(rateLimiter);
 
-// Documentation
+/**
+ * ===============================
+ * DOCUMENTATION
+ * ===============================
+ */
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
-// General Middleware
+/**
+ * ===============================
+ * GENERAL MIDDLEWARE
+ * ===============================
+ */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(compression());
 app.use(requestLogger);
 
-// Routes
+/**
+ * ===============================
+ * ROUTES
+ * ===============================
+ */
 app.use('/api/v1', routes);
-app.use('/api', routes); // Support non-versioned paths as requested
+app.use('/api', routes); // non-versioned support
 
-// Root Route
+/**
+ * ===============================
+ * ROOT & HEALTH
+ * ===============================
+ */
 app.get('/', (req, res) => {
     res.status(200).json({
         success: true,
@@ -40,13 +94,12 @@ app.get('/', (req, res) => {
         endpoints: {
             health: '/health',
             documentation: '/api-docs',
-            api: '/api/v1'
+            api: '/api/v1',
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
     });
 });
 
-// Health Check
 app.get('/health', (req, res) => {
     res.status(200).json({
         status: 'success',
@@ -56,7 +109,11 @@ app.get('/health', (req, res) => {
     });
 });
 
-// Error Handling
+/**
+ * ===============================
+ * ERROR HANDLING
+ * ===============================
+ */
 app.use(notFound);
 app.use(errorHandler);
 
