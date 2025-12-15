@@ -17,8 +17,9 @@ process.on('unhandledRejection', (err) => {
 });
 
 // Handle uncaught exceptions
+// H
 process.on('uncaughtException', (err) => {
-    logger.error('UNCAUGHT EXCEPTION! 💥 Shutting down...');
+    logger.error('UNCAUGHT EXCEPTION! 💥 Shuttting down...');
     logger.error(err.name, err.message);
     process.exit(1);
 });
